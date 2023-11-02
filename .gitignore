@@ -1,0 +1,13 @@
+*.toml
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+go.work
+
+*.x
+*.pdf
+svanth

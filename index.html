@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SVANTh</title>
+    <link rel="stylesheet" href="style.css" />
+    <script defer src="./alpine.min.js"></script>
+</head>
+
+<body>
+    <div x-data="app">
+        <div id="ctrl">
+            <button x-show="connected" @click="toggleAuto" :class="auto ? 'pressed' : ''">Auto</button>
+            <button x-show="!connected" @click="connect">Reconnect</button>
+            <button @click="prev" :class="{ disabled: currpage == 1 }">Prev</button>
+            <button @click="next" :class="{ disabled: currpage == npages }">Next</button>
+            <div class="set">
+                <span x-text="'Page ' + currpage + ' / ' + npages"></span><br />
+                <span x-text="'Auto: ' + autoPageNum + ' (' + autoInfo + ')'"></span><br />
+                <span x-text="status"></span><br />
+                <span x-text="'File: ' + pdf"></span><br />
+            </div>
+            <div class="set">
+                <div><span x-text="Number(scale).toFixed(3) + 'x'"></span></div>
+                <input @change="setScale" x-model="scale" type="range" step="0.1" min="0.1" max="5" />
+                <button @click="resetScale" :class="{ disabled: !forceScale }">Reset scale</button>
+            </div>
+            <div class="set">
+                Filter:
+                <select @change="setup" x-model="filter">
+                    <option>None</option>
+                    <option>Inverted</option>
+                    <option>Sepia</option>
+                </select>
+            </div>
+            <div class="set">
+                File:
+                <select @change="loadSet" x-model="pdf">
+                    <option>-</option>
+                    <template x-for="f in pdfs">
+                        <option x-text="f"></option>
+                    </template>
+                    <option>Refresh...</option>
+                </select>
+            </div>
+            <div class="set settings">
+                Settings:<br />
+                <span>Universe</span>
+                <span>Channel</span><br />
+                <input @change="setup" type="number" x-model.number="universe" min="0" />
+                <input @change="setup" type="number" x-model.number="channel" min="1" max="510" />
+            </div>
+        </div>
+        <div id="page"><canvas id="cnv" :class="getStyle"></canvas></div>
+    </div>
+    <script src="./pdf.min.js"></script>
+    <script src="./app.js"></script>
+</body>
+
+</html>

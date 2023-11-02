@@ -1,0 +1,78 @@
+body,
+#ctrl {
+  background-color: #111;
+  color: #ccc;
+}
+
+canvas {
+  border: 1px solid #000;
+}
+
+#ctrl {
+  display: grid;
+  overflow: auto;
+  height: 100vh;
+  z-index: 10;
+  position: fixed;
+  top: 0;
+  left: 0;
+}
+
+#page {
+  position: absolute;
+  top: 0;
+  right: 0;
+}
+
+button,
+.set {
+  min-height: 4rem;
+  width: 90%;
+  margin: 0.2rem auto;
+  text-align: center;
+  display: block;
+}
+
+button {
+  background-color: #333;
+  color: #ccc;
+  border: 3px solid #ccc;
+  border-radius: 5px;
+}
+
+input {
+  width: 100%;
+}
+
+.settings input,
+.settings span {
+  display: block;
+  float: left;
+  width: 45%;
+  margin: 0.1rem auto;
+}
+
+select {
+  width: 90%;
+  height: 80%;
+}
+
+.pressed {
+  border-color: #0ff;
+  color: #0ff;
+}
+.disabled {
+  border-color: #666;
+  color: #666;
+  background-color: #111;
+}
+
+.inverted {
+  filter: invert(100%);
+}
+.huerotated {
+  filter: invert(64%) contrast(228%) brightness(80%) hue-rotate(180deg);
+}
+.hidden {
+  display: none;
+}
