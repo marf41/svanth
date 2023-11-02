@@ -21,6 +21,7 @@ Work In Progress. Proof-of-concept.
 ## TODO
 
 - [ ] Multiple files support.
+- [ ] Fix multiple connections from same client.
 
 ## Internals
 

@@ -114,8 +114,43 @@ func (s *Settings) save() {
 	buf := new(bytes.Buffer)
 	err := toml.NewEncoder(buf).Encode(s)
 	if err == nil {
-		log.Println(buf)
+		// log.Println(buf)
 		os.WriteFile("svanth.toml", buf.Bytes(), 0644)
+	}
+}
+
+func parseMessage(c *websocket.Conn, messageType websocket.MessageType, data []byte) {
+	// echo
+	log.Println("OnMessage:", messageType, string(data))
+	// c.WriteMessage(messageType, data)
+	if messageType != websocket.TextMessage {
+		return
+	}
+	if strings.HasPrefix(string(data), "{") {
+		var jsset Settings
+		err := json.Unmarshal(data, &jsset)
+		if err != nil {
+			log.Println(err.Error())
+			return
+		}
+		settings = jsset
+		settings.save()
+		return
+	}
+	if strings.Compare(string(data), "pdf") == 0 {
+		pdfs, err := getPDFs()
+		if err != nil {
+			c.WriteMessage(websocket.TextMessage, []byte("{ \"error\": [ "+err.Error()+" ] }"))
+			return
+		}
+		c.WriteMessage(websocket.TextMessage, []byte("{ \"pdfs\": [ "+strings.Join(pdfs, ", ")+" ] }"))
+	}
+	if strings.Compare(string(data), "set") == 0 {
+		msg, err := json.Marshal(settings)
+		if err == nil {
+			c.WriteMessage(websocket.TextMessage, msg)
+		}
+		return
 	}
 }
 
@@ -128,40 +163,7 @@ func newUpgrader() *websocket.Upgrader {
 		log.Println("OnOpen:", c.RemoteAddr().String())
 		go conn.run()
 	})
-	u.OnMessage(func(c *websocket.Conn, messageType websocket.MessageType, data []byte) {
-		// echo
-		log.Println("OnMessage:", messageType, string(data))
-		// c.WriteMessage(messageType, data)
-		if messageType != websocket.TextMessage {
-			return
-		}
-		if strings.HasPrefix(string(data), "{") {
-			var jsset Settings
-			err := json.Unmarshal(data, &jsset)
-			if err != nil {
-				log.Println(err.Error())
-				return
-			}
-			settings = jsset
-			settings.save()
-			return
-		}
-		if strings.Compare(string(data), "pdf") == 0 {
-			pdfs, err := getPDFs()
-			if err != nil {
-				c.WriteMessage(websocket.TextMessage, []byte("{ \"error\": [ "+err.Error()+" ] }"))
-				return
-			}
-			c.WriteMessage(websocket.TextMessage, []byte("{ \"pdfs\": [ "+strings.Join(pdfs, ", ")+" ] }"))
-		}
-		if strings.Compare(string(data), "set") == 0 {
-			msg, err := json.Marshal(settings)
-			if err == nil {
-				c.WriteMessage(websocket.TextMessage, msg)
-			}
-			return
-		}
-	})
+	u.OnMessage(parseMessage)
 	u.OnClose(func(c *websocket.Conn, err error) {
 		hub.unregisterWS(c)
 		log.Println("OnClose:", c.RemoteAddr().String(), err)
@@ -246,8 +248,8 @@ func main() {
 	hub = newHub()
 	mux := &http.ServeMux{}
 	mux.HandleFunc("/ws", onWebsocket)
-	// mux.Handle("/", http.FileServer(http.FS(webUI)))
-	mux.Handle("/", http.FileServer(http.Dir(".")))
+	mux.Handle("/", http.FileServer(http.FS(webUI)))
+	// mux.Handle("/", http.FileServer(http.Dir(".")))
 	mux.HandleFunc("/pdf/", servePDF)
 	engine := nbhttp.NewEngine(nbhttp.Config{
 		Network:                 "tcp",
